@@ -7,12 +7,12 @@ using UnityEngine;
 namespace UiAnimation
 {
     [TrackBindingType(typeof(RectTransform))]
-    [TrackClipType(typeof(UiAnimationClipRectTransformSizeDelta))]
-    public class UiAnimationTrackRectTransformSizeDelta : UiAnimationTrackBase
+    [TrackClipType(typeof(UiAnimationClipRectTransformLocalScale))]
+    public class UiAnimationTrackRectTransformLocalScale : UiAnimationTrackBase
     {
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
-            var playable = ScriptPlayable<UiAnimationMixerRectTransformSizeDelta>.Create(graph, inputCount);
+            var playable = ScriptPlayable<UiAnimationMixerRectTransformLocalScale>.Create(graph, inputCount);
 
             ProcessPlayable(playable);
 
@@ -26,9 +26,10 @@ namespace UiAnimation
             var rectTransform = target as RectTransform;
             if (rectTransform != null)
             {
-                rectTransform.sizeDelta = new Vector2(
+                rectTransform.localScale = new Vector3(
                     m_InitStatus.m_UniformValue.x,
-                    m_InitStatus.m_UniformValue.y
+                    m_InitStatus.m_UniformValue.y,
+                    1
                 );
             }
         }
@@ -40,7 +41,7 @@ namespace UiAnimation
             var y = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("y");
 
             var editorResult = UnityEditor.EditorGUILayout.Vector2Field(
-                "Init Size Delta", new Vector2(x.floatValue, y.floatValue)
+                "Init Local Scale", new Vector2(x.floatValue, y.floatValue)
             );
             x.floatValue = editorResult.x;
             y.floatValue = editorResult.y;
@@ -54,8 +55,8 @@ namespace UiAnimation
 
             if (rectTransform != null)
             {
-                x.floatValue = rectTransform.sizeDelta.x;
-                y.floatValue = rectTransform.sizeDelta.y;
+                x.floatValue = rectTransform.localScale.x;
+                y.floatValue = rectTransform.localScale.y;
             }
         }
 
@@ -67,7 +68,7 @@ namespace UiAnimation
 
             if (rectTransform != null)
             {
-                rectTransform.sizeDelta = new Vector2(x.floatValue, y.floatValue);
+                rectTransform.localScale = new Vector3(x.floatValue, y.floatValue, 1);
             }
         }
 #endif
@@ -75,8 +76,8 @@ namespace UiAnimation
 
 #if UNITY_EDITOR
 
-    [UnityEditor.CustomEditor(typeof(UiAnimationTrackRectTransformSizeDelta))]
-    public class UiAnimationTrackRectTransformSizeDeltaEditor : UiAnimationTrackBaseEditor
+    [UnityEditor.CustomEditor(typeof(UiAnimationTrackRectTransformLocalScale))]
+    public class UiAnimationTrackRectTransformLocalScaleEditor : UiAnimationTrackBaseEditor
     {
         public override void OnInspectorGUI()
         {
@@ -86,7 +87,7 @@ namespace UiAnimation
             var uniformValue = initValue.FindPropertyRelative("m_UniformValue");
 
             GUI.color = Color.gray;
-            UnityEditor.EditorGUILayout.Vector2Field("Init Size Delta",
+            UnityEditor.EditorGUILayout.Vector2Field("Init Local Scale",
                 new Vector2(
                     uniformValue.FindPropertyRelative("x").floatValue,
                     uniformValue.FindPropertyRelative("y").floatValue

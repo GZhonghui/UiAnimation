@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using UnityEngine;
+using DG.Tweening;
 
 namespace UiAnimation
 {
@@ -20,6 +21,19 @@ namespace UiAnimation
         protected override void ProcessPlayable(Playable playable)
         {
             base.ProcessPlayable(playable);
+        }
+
+        public override Tween CreateTween(UnityEngine.Object target)
+        {
+            var rectTransform = target as RectTransform;
+            if (rectTransform == null) return null;
+
+            return DOTween.To(
+                () => rectTransform.anchoredPosition,
+                x => rectTransform.anchoredPosition = x,
+                new Vector2(m_EndStatus.m_UniformValue.x, m_EndStatus.m_UniformValue.y),
+                (float)duration
+            ).Pause();
         }
     }
 

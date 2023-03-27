@@ -7,11 +7,11 @@ using DG.Tweening;
 
 namespace UiAnimation
 {
-    public class UiAnimationClipRectTransformLocalRotation : UiAnimationClipBase
+    public class UiAnimationClipRectTransformLocalScale : UiAnimationClipBase
     {
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)
         {
-            var playable = ScriptPlayable<UiAnimationBehaviourRectTransformLocalRotation>.Create(graph);
+            var playable = ScriptPlayable<UiAnimationBehaviourRectTransformLocalScale>.Create(graph);
 
             ProcessPlayable(playable);
 
@@ -29,22 +29,22 @@ namespace UiAnimation
             if (rectTransform == null) return null;
 
             return DOTween.To(
-                () => rectTransform.localEulerAngles.z,
-                x => rectTransform.localEulerAngles = new Vector3(
-                    rectTransform.localEulerAngles.x,
-                    rectTransform.localEulerAngles.y,
-                    x
+                () => new Vector2(
+                    rectTransform.localScale.x, rectTransform.localScale.y
                 ),
-                m_EndStatus.m_UniformValue.x,
+                x => rectTransform.localScale = new Vector3(
+                    x.x, x.y, 1
+                ),
+                new Vector2(m_EndStatus.m_UniformValue.x, m_EndStatus.m_UniformValue.y),
                 (float)duration
-            ).Pause();
+            );
         }
     }
 
 #if UNITY_EDITOR
 
-    [UnityEditor.CustomEditor(typeof(UiAnimationClipRectTransformLocalRotation))]
-    public class UiAnimationClipRectTransformLocalRotationEditor : UiAnimationClipBaseEditor
+    [UnityEditor.CustomEditor(typeof(UiAnimationClipRectTransformLocalScale))]
+    public class UiAnimationClipRectTransformLocalScaleEditor : UiAnimationClipBaseEditor
     {
         public override void OnInspectorGUI()
         {
@@ -55,10 +55,15 @@ namespace UiAnimation
             var uniformEndValue = serializedObject.FindProperty("m_EndStatus");
             var uniformValue = uniformEndValue.FindPropertyRelative("m_UniformValue");
             var x = uniformValue.FindPropertyRelative("x");
+            var y = uniformValue.FindPropertyRelative("y");
 
-            x.floatValue = UnityEditor.EditorGUILayout.FloatField(
-                "End Local Rotation", x.floatValue
+            var editorResult = UnityEditor.EditorGUILayout.Vector2Field(
+                "End Local Scale",
+                new Vector2(x.floatValue, y.floatValue)
             );
+
+            x.floatValue = editorResult.x;
+            y.floatValue = editorResult.y;
 
             serializedObject.ApplyModifiedProperties();
         }

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UiAnimation
 {
-    public class UiAnimationMixerRectTransformAnchoredPosition : UiAnimationMixerBaseVector2
+    public class UiAnimationMixerRectTransformSizeDelta : UiAnimationMixerBaseVector2
     {
         protected override void ApplyValue(object playerData)
         {
@@ -15,7 +15,7 @@ namespace UiAnimation
             var rectTransform = playerData as RectTransform;
             if (rectTransform != null)
             {
-                rectTransform.anchoredPosition = m_FinalValue;
+                rectTransform.sizeDelta = m_FinalValue;
             }
         }
     }

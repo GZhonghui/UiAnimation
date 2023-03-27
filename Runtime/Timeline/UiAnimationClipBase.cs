@@ -1,9 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using UnityEngine;
+using DG.Tweening;
+
+#if UNITY_2022_1_OR_NEWER
+using Unity.VisualScripting;
+#endif
 
 namespace UiAnimation
 {
@@ -34,6 +38,11 @@ namespace UiAnimation
                 behaviour.m_Start = m_Start;
                 behaviour.m_End = m_End;
             }
+        }
+
+        public virtual Tween CreateTween(UnityEngine.Object target)
+        {
+            return null;
         }
     }
 

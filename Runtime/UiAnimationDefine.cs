@@ -1,17 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
 using UnityEngine;
 
 namespace UiAnimation
 {
     public class UiAnimationDefine
     {
+        public static bool useNativeTimelineAsset
+        {
+            get => true;
+        }
+
         public static string name
         {
-            get
-            {
-                return "UiAnimation";
-            }
+            get => "UiAnimation";
+        }
+
+        public static string extensionName
+        {
+            get => "uianimation";
         }
 
         public static double timelineEps
@@ -21,10 +30,7 @@ namespace UiAnimation
 
         public static string assetPath
         {
-            get
-            {
-                return System.IO.Path.Combine("Assets", "Ui", "Animation");
-            }
+            get => System.IO.Path.Combine("Assets", "Ui", "Animation");
         }
 
         public enum TrackType
@@ -34,6 +40,7 @@ namespace UiAnimation
             RectTransformAnchoredPosition = 1,
             RectTransformSizeDelta = 2,
             RectTransformLocalRotation = 3,
+            RectTransformLocalScale = 4,
 
             UguiImageColor = 101,
 

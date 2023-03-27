@@ -2,20 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
+using UnityEngine.UI;
 using UnityEngine;
 
 namespace UiAnimation
 {
-    public class UiAnimationMixerRectTransformAnchoredPosition : UiAnimationMixerBaseVector2
+    public class UiAnimationMixerUguiImageColor : UiAnimationMixerBaseVector4
     {
         protected override void ApplyValue(object playerData)
         {
             base.ApplyValue(playerData);
 
-            var rectTransform = playerData as RectTransform;
-            if (rectTransform != null)
+            var image = playerData as Image;
+            if (image != null)
             {
-                rectTransform.anchoredPosition = m_FinalValue;
+                image.color = new Color(
+                    m_FinalValue.x, m_FinalValue.y, m_FinalValue.z, m_FinalValue.w
+                );
             }
         }
     }

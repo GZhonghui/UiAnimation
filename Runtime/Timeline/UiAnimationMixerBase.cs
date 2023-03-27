@@ -15,6 +15,19 @@ namespace UiAnimation
             base.ProcessFrame(playable, info, playerData);
         }
 
+        // Interface
+        protected virtual void ProcessInput(UiAnimationBehaviourBase behaviourBase, float progress)
+        {
+
+        }
+
+        // Interface
+        protected virtual void ApplyValue(object playerData)
+        {
+
+        }
+
+        // Tool
         protected void IterateInput(Playable playable)
         {
             var inputCount = playable.GetInputCount();
@@ -39,11 +52,7 @@ namespace UiAnimation
             }
         }
 
-        protected virtual void ProcessInput(UiAnimationBehaviourBase behaviourBase, float progress)
-        {
-
-        }
-
+        // Tool
         protected UiAnimationBehaviourBase FindLastFinishedClip(Playable playable)
         {
             UiAnimationBehaviourBase result = null;

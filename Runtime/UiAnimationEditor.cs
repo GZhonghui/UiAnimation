@@ -2,11 +2,14 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using UnityEngine;
 using UnityEditor;
+
+#if UNITY_2022_1_OR_NEWER
+using Unity.VisualScripting;
+#endif
 
 namespace UiAnimation
 {
@@ -23,21 +26,29 @@ namespace UiAnimation
             // Properties
             var propertyInstances = serializedObject.FindProperty("m_Instances");
 
-            #region Title
             GUILayout.BeginVertical("HelpBox");
-
-            EditorGUILayout.HelpBox("Ui Animation Editor", MessageType.Info, true);
-
-            GUI.color = Color.green;
+            EditorGUILayout.HelpBox("UiAnimation Tools", MessageType.Info, true);
+            #region Title
             if (GUILayout.Button("Create Animation Instance"))
             {
                 AddInstance();
             }
-            GUI.color = Color.white;
 
-            GUILayout.EndVertical();
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Stop Preview"))
+            {
+                StopPreview();
+            }
+            if (GUILayout.Button("Export All"))
+            {
+
+            }
+            GUILayout.EndHorizontal();
             #endregion
+            GUILayout.EndVertical();
 
+            GUILayout.BeginVertical("HelpBox");
+            EditorGUILayout.HelpBox("UiAnimation Instances", MessageType.Info, true);
             #region Instances
 
             for (int i = 0; i < propertyInstances.arraySize; i++)
@@ -46,14 +57,14 @@ namespace UiAnimation
 
                 GUILayout.BeginHorizontal();
                 // Select Button
-                GUI.color = (m_SelectedIndex == i) ? Color.cyan : Color.yellow;
+                GUI.color = (m_SelectedIndex == i) ? Color.cyan : Color.white;
                 if (GUILayout.Button(propertyInstance.FindPropertyRelative("m_InstanceName").stringValue))
                 {
                     if (m_SelectedIndex == i) m_SelectedIndex = -1;
                     else m_SelectedIndex = i;
                 }
                 // Remove Button
-                GUI.color = Color.red;
+                GUI.color = new Color(128 / 255.999f, 109 / 255.999f, 158 / 255.999f);
                 if (GUILayout.Button("X", GUILayout.Width(32)))
                 {
                     RemoveInstance(i);
@@ -72,6 +83,7 @@ namespace UiAnimation
             }
 
             #endregion
+            GUILayout.EndVertical();
         }
 
         #region Private
@@ -135,9 +147,9 @@ namespace UiAnimation
             bool allReset = false;
             GUILayout.BeginHorizontal();
             GUI.color = Color.green;
-            allLock = GUILayout.Button("Lock All");
-            GUI.color = Color.red;
             allReset = GUILayout.Button("Reset All");
+            GUI.color = Color.red;
+            allLock = GUILayout.Button("Lock All");
             GUI.color = Color.white;
             GUILayout.EndHorizontal();
             #endregion
@@ -225,16 +237,16 @@ namespace UiAnimation
                         sourceObject, new object[] { propertyInitStatus }
                     );
                     GUI.color = Color.green;
-                    if (GUILayout.Button("L", GUILayout.Width(24)) || allLock)
+                    if (GUILayout.Button("R", GUILayout.Width(24)) || allReset)
                     {
-                        sourceObject.GetType().GetMethod("EditorLock").Invoke(
+                        sourceObject.GetType().GetMethod("EditorReset").Invoke(
                             sourceObject, new object[] { propertyInitStatus, propertyValue.objectReferenceValue }
                         );
                     }
                     GUI.color = Color.red;
-                    if (GUILayout.Button("R", GUILayout.Width(24)) || allReset)
+                    if (GUILayout.Button("L", GUILayout.Width(24)) || allLock)
                     {
-                        sourceObject.GetType().GetMethod("EditorReset").Invoke(
+                        sourceObject.GetType().GetMethod("EditorLock").Invoke(
                             sourceObject, new object[] { propertyInitStatus, propertyValue.objectReferenceValue }
                         );
                     }
@@ -246,13 +258,19 @@ namespace UiAnimation
             }
             #endregion
 
-            #region Preview
-            GUI.color = Color.cyan;
-            if (GUILayout.Button("Build Preview"))
+            #region Generate
+            GUILayout.BeginHorizontal();
+            GUI.color = new Color(241 / 255.999f, 147 / 255.999f, 156 / 255.999f);
+            if (GUILayout.Button("Build Timeline"))
             {
                 BuildPreview(propertyInstance);
             }
+            if (GUILayout.Button("Export DoTween"))
+            {
+
+            }
             GUI.color = Color.white;
+            GUILayout.EndHorizontal();
             #endregion
 
             GUILayout.EndVertical();
@@ -262,13 +280,14 @@ namespace UiAnimation
 
         private void BuildPreview(SerializedProperty propertyInstance)
         {
-            #region Add Director
+            #region Process Director
             if (m_UiAnimation.GetComponent<PlayableDirector>() == null)
             {
-                m_UiAnimation.AddComponent<PlayableDirector>();
+                m_UiAnimation.gameObject.AddComponent<PlayableDirector>();
             }
 
             var playDirector = m_UiAnimation.GetComponent<PlayableDirector>();
+            playDirector.enabled = true;
 
             // Disable Auto Play
             var serializedDirector = new SerializedObject(playDirector);
@@ -308,6 +327,18 @@ namespace UiAnimation
             }
 
             #endregion
+        }
+
+        private void StopPreview()
+        {
+            if (m_UiAnimation.GetComponent<PlayableDirector>() == null)
+            {
+                m_UiAnimation.gameObject.AddComponent<PlayableDirector>();
+            }
+
+            var playDirector = m_UiAnimation.GetComponent<PlayableDirector>();
+            playDirector.enabled = false;
+            playDirector.playableAsset = null;
         }
 
         #endregion

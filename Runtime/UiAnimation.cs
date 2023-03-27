@@ -1,10 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using UnityEngine;
 using System;
+using DG.Tweening;
+
+#if UNITY_2022_1_OR_NEWER
+using Unity.VisualScripting;
+#endif
 
 namespace UiAnimation
 {
@@ -59,7 +63,69 @@ namespace UiAnimation
 
         public bool Play(string instanceName)
         {
+            for (int i = 0; i < m_Instances.Count; i += 1)
+            {
+                // Find First Matching
+                var instance = m_Instances[i];
+                if (instance.m_InstanceName != null && instance.m_InstanceName == instanceName)
+                {
+                    if (instance.m_TimelineAsset != null)
+                    {
+                        // Play via Timeline Asset
+                        PlayTimeline(ref instance);
+                        return true;
+                    }
+                    break;
+                }
+            }
+
             return false;
+        }
+
+        private void PlayTimeline(ref UiAnimationInstance instance)
+        {
+            Debug.Log("PlayTimeline");
+
+            var bindingMap = new Dictionary<UnityEngine.Object, UnityEngine.Object>();
+
+            for (int i = 0; i < instance.m_Bindings.Count; i++)
+            {
+                var binding = instance.m_Bindings[i];
+                if (binding.m_Key != null && binding.m_Value != null)
+                {
+                    bindingMap[binding.m_Key] = binding.m_Value;
+                }
+            }
+
+            var sequence = DOTween.Sequence();
+
+            foreach (var output in instance.m_TimelineAsset.outputs)
+            {
+                var track = output.sourceObject as UiAnimationTrackBase;
+                if (track != null && bindingMap.ContainsKey(track))
+                {
+                    var bindingTarget = bindingMap[track];
+
+                    track.InitProperty(bindingTarget);
+
+                    foreach (var clip in track.GetClips())
+                    {
+                        var derivedClip = clip.asset as UiAnimationClipBase;
+                        if (derivedClip != null)
+                        {
+                            var tween = derivedClip.CreateTween(bindingTarget).SetDelay((float)clip.start);
+                            tween.Play();
+                            if (tween != null)
+                            {
+                                sequence.Join(tween);
+                            }
+                        }
+                    }
+                }
+            }
+
+            Debug.Log("Play");
+            // sequence.Play();
         }
     }
 }

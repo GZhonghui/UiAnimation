@@ -19,6 +19,21 @@ namespace UiAnimation
             return playable;
         }
 
+        public override void InitProperty(UnityEngine.Object target)
+        {
+            base.InitProperty(target);
+
+            var rectTransform = target as RectTransform;
+            if (rectTransform != null)
+            {
+                rectTransform.localEulerAngles = new Vector3(
+                    rectTransform.localEulerAngles.x,
+                    rectTransform.localEulerAngles.y,
+                    m_InitStatus.m_UniformValue.x
+                );
+            }
+        }
+
 #if UNITY_EDITOR
         public override void EditorDrawInitValue(UnityEditor.SerializedProperty propertyInitStatus)
         {
@@ -66,9 +81,11 @@ namespace UiAnimation
             var initValue = serializedObject.FindProperty("m_InitStatus");
             var uniformValue = initValue.FindPropertyRelative("m_UniformValue");
 
+            GUI.color = Color.gray;
             UnityEditor.EditorGUILayout.FloatField(
                 "Init Local Rotation", uniformValue.FindPropertyRelative("x").floatValue
             );
+            GUI.color = Color.white;
         }
     }
 

@@ -40,6 +40,11 @@ namespace UiAnimation
             }
         }
 
+        public virtual void InitProperty(UnityEngine.Object target)
+        {
+
+        }
+
 #if UNITY_EDITOR
         // propertyInitStatus saved in UiAnimation
         public virtual void EditorDrawInitValue(UnityEditor.SerializedProperty propertyInitStatus)

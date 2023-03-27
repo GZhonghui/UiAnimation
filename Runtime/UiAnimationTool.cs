@@ -7,14 +7,15 @@ using UnityEngine.Timeline;
 using UnityEngine;
 using UnityEditor;
 
-public static class UiAnimationTool
+namespace UiAnimation
 {
-    public static void Export(string timelineAssetGuid)
+    public static class UiAnimationTool
     {
-        var timelineAsset = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(timelineAssetGuid));
-        if (timelineAsset == null) return;
-
-        
+        public static void Export(string timelineAssetGuid)
+        {
+            var timelineAsset = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(timelineAssetGuid));
+            if (timelineAsset == null) return;
+        }
     }
 }
 
