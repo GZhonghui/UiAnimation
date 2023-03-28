@@ -131,7 +131,19 @@ namespace UiAnimation
 
             // Name
             var propertyName = propertyInstance.FindPropertyRelative("m_InstanceName");
-            propertyName.stringValue = EditorGUILayout.TextField("Instance Name", propertyName.stringValue);
+            if (UiAnimationDefine.enableLua)
+            {
+                var index = UiAnimationLua.GetLuaExport(m_UiAnimation.gameObject, propertyName.stringValue, out List<string> luaExport);
+                index = EditorGUILayout.Popup("Instance Name", index, luaExport.ToArray());
+                if (index >= 0 && index < luaExport.Count)
+                {
+                    propertyName.stringValue = luaExport[index];
+                }
+            }
+            else
+            {
+                propertyName.stringValue = EditorGUILayout.TextField("Instance Name", propertyName.stringValue);
+            }
 
             // Timeline Asset
             var propertyTimelineAsset = propertyInstance.FindPropertyRelative("m_TimelineAsset");
@@ -176,24 +188,33 @@ namespace UiAnimation
 
                 // Read Saved Bindings
                 var propertyBindings = propertyInstance.FindPropertyRelative("m_Bindings");
-                var savedBindings = new Dictionary<UnityEngine.Object, UnityEngine.Object>();
+                var savedBindings = new Dictionary<UnityEngine.Object, UiAnimationBinding>();
 
+                // Read and Save
                 for (int i = 0; i < propertyBindings.arraySize; i += 1)
                 {
                     var propertyBinding = propertyBindings.GetArrayElementAtIndex(i);
                     var propertyKey = propertyBinding.FindPropertyRelative("m_Key");
                     var propertyValue = propertyBinding.FindPropertyRelative("m_Value");
+                    var propertyEnableInitStatus = propertyBinding.FindPropertyRelative("m_EnableInitStatus");
+                    var propertyInitStatus = propertyBinding.FindPropertyRelative("m_InitStatus");
 
-                    if (propertyKey.objectReferenceValue != null
-                        && propertyValue.objectReferenceValue != null)
+                    // Save a Binding
+                    if (propertyKey.objectReferenceValue != null)
                     {
-                        savedBindings[propertyKey.objectReferenceValue] = propertyValue.objectReferenceValue;
+                        var savedBinding = new UiAnimationBinding();
+                        savedBinding.m_Value = propertyValue.objectReferenceValue;
+                        savedBinding.m_EnableInitStatus = propertyEnableInitStatus.boolValue;
+                        savedBinding.m_InitStatus.Deserialize(propertyInitStatus);
+
+                        savedBindings[propertyKey.objectReferenceValue] = savedBinding;
                     }
                 }
 
                 // Resize Saved Bindings
                 propertyBindings.arraySize = listPlayableBindings.Count;
 
+                // Write back
                 for (int i = 0; i < listPlayableBindings.Count; i += 1)
                 {
                     GUILayout.BeginVertical("GroupBox");
@@ -206,6 +227,7 @@ namespace UiAnimation
                     var propertyFileId = propertyBinding.FindPropertyRelative("m_FileId");
                     var propertyKey = propertyBinding.FindPropertyRelative("m_Key");
                     var propertyValue = propertyBinding.FindPropertyRelative("m_Value");
+                    var propertyEnableInitStatus = propertyBinding.FindPropertyRelative("m_EnableInitStatus");
                     var propertyInitStatus = propertyBinding.FindPropertyRelative("m_InitStatus");
 
                     // File Id
@@ -217,22 +239,43 @@ namespace UiAnimation
                     // Key
                     propertyKey.objectReferenceValue = sourceObject;
 
-                    // Value
-                    UnityEngine.Object savedTarget = null;
-                    if (propertyKey.objectReferenceValue != null
-                        && savedBindings.ContainsKey(propertyKey.objectReferenceValue))
+                    // Restore a Binding
+                    if (propertyKey.objectReferenceValue != null) // Track is Avaliable
                     {
-                        savedTarget = savedBindings[propertyKey.objectReferenceValue];
+                        if (savedBindings.ContainsKey(propertyKey.objectReferenceValue))
+                        {
+                            var savedBinding = savedBindings[propertyKey.objectReferenceValue];
+
+                            propertyValue.objectReferenceValue = savedBinding.m_Value;
+                            propertyEnableInitStatus.boolValue = savedBinding.m_EnableInitStatus;
+                            savedBinding.m_InitStatus.Serialize(propertyInitStatus);
+                        }
+                        // Default Value for New Track
+                        else
+                        {
+                            propertyValue.objectReferenceValue = null;
+                            propertyEnableInitStatus.boolValue = true;
+
+                            var defaultInitStatus = new UiAnimationStatus();
+                            defaultInitStatus.Serialize(propertyInitStatus); // Set Empty
+                        }
                     }
+
+                    // Value
                     propertyValue.objectReferenceValue = EditorGUILayout.ObjectField(
                         sourceObject.name,
-                        savedTarget,
+                        propertyValue.objectReferenceValue,
                         output.outputTargetType,
                         true
                     );
 
                     // Init Value
                     GUILayout.BeginHorizontal();
+                    // Disable Init Value at Runtime
+                    if (!propertyEnableInitStatus.boolValue)
+                    {
+                        GUI.color = Color.gray;
+                    }
                     sourceObject.GetType().GetMethod("EditorDrawInitValue").Invoke(
                         sourceObject, new object[] { propertyInitStatus }
                     );
@@ -249,6 +292,11 @@ namespace UiAnimation
                         sourceObject.GetType().GetMethod("EditorLock").Invoke(
                             sourceObject, new object[] { propertyInitStatus, propertyValue.objectReferenceValue }
                         );
+                    }
+                    GUI.color = Color.magenta;
+                    if (GUILayout.Button("E", GUILayout.Width(24)))
+                    {
+                        propertyEnableInitStatus.boolValue = !propertyEnableInitStatus.boolValue;
                     }
                     GUI.color = Color.white;
                     GUILayout.EndHorizontal();
@@ -339,6 +387,12 @@ namespace UiAnimation
             var playDirector = m_UiAnimation.GetComponent<PlayableDirector>();
             playDirector.enabled = false;
             playDirector.playableAsset = null;
+
+            var playDirectorObject = new SerializedObject(playDirector);
+            playDirectorObject.Update();
+            playDirectorObject.FindProperty("m_Enabled").intValue = 0;
+            playDirectorObject.FindProperty("m_PlayableAsset").objectReferenceValue = null;
+            playDirectorObject.ApplyModifiedProperties();
         }
 
         #endregion

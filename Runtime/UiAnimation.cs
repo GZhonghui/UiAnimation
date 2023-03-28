@@ -17,20 +17,48 @@ namespace UiAnimation
     {
         [SerializeField]
         public Vector4 m_UniformValue;
+
+#if UNITY_EDITOR
+
+        public void Serialize(UnityEditor.SerializedProperty statusProperty)
+        {
+            if (statusProperty != null)
+            {
+                statusProperty.FindPropertyRelative("m_UniformValue").vector4Value = m_UniformValue;
+            }
+        }
+
+        public void Deserialize(UnityEditor.SerializedProperty statusProperty)
+        {
+            if (statusProperty != null)
+            {
+                m_UniformValue = statusProperty.FindPropertyRelative("m_UniformValue").vector4Value;
+            }
+        }
+
+#endif
     }
 
     [Serializable]
     public struct UiAnimationBinding
     {
+        // Key
         [SerializeField]
         public long m_FileId;
 
+        // Key
         [SerializeField]
         public UnityEngine.Object m_Key;
 
+        // Value
         [SerializeField]
         public UnityEngine.Object m_Value;
 
+        // Value
+        [SerializeField]
+        public bool m_EnableInitStatus;
+
+        // Value
         [SerializeField]
         public UiAnimationStatus m_InitStatus;
     }
@@ -61,7 +89,7 @@ namespace UiAnimation
         [SerializeField]
         public List<UiAnimationInstance> m_Instances;
 
-        public bool Play(string instanceName)
+        public bool Play(string instanceName, Action callback = null)
         {
             for (int i = 0; i < m_Instances.Count; i += 1)
             {
@@ -72,7 +100,7 @@ namespace UiAnimation
                     if (instance.m_TimelineAsset != null)
                     {
                         // Play via Timeline Asset
-                        PlayTimeline(ref instance);
+                        PlayTimeline(ref instance, callback);
                         return true;
                     }
                     break;
@@ -82,18 +110,21 @@ namespace UiAnimation
             return false;
         }
 
-        private void PlayTimeline(ref UiAnimationInstance instance)
+        public bool Rewind(string instanceName)
         {
-            Debug.Log("PlayTimeline");
+            return false;
+        }
 
-            var bindingMap = new Dictionary<UnityEngine.Object, UnityEngine.Object>();
+        private void PlayTimeline(ref UiAnimationInstance instance, Action callback)
+        {
+            var bindingMap = new Dictionary<UnityEngine.Object, UiAnimationBinding>();
 
             for (int i = 0; i < instance.m_Bindings.Count; i++)
             {
                 var binding = instance.m_Bindings[i];
                 if (binding.m_Key != null && binding.m_Value != null)
                 {
-                    bindingMap[binding.m_Key] = binding.m_Value;
+                    bindingMap[binding.m_Key] = binding;
                 }
             }
 
@@ -104,17 +135,25 @@ namespace UiAnimation
                 var track = output.sourceObject as UiAnimationTrackBase;
                 if (track != null && bindingMap.ContainsKey(track))
                 {
-                    var bindingTarget = bindingMap[track];
+                    var binding = bindingMap[track];
+                    var bindingTarget = binding.m_Value;
 
-                    track.InitProperty(bindingTarget);
+                    // Enable Init Value at Runtime
+                    if (binding.m_EnableInitStatus)
+                    {
+                        track.InitProperty(bindingTarget, binding.m_InitStatus);
+                    }
 
                     foreach (var clip in track.GetClips())
                     {
                         var derivedClip = clip.asset as UiAnimationClipBase;
                         if (derivedClip != null)
                         {
-                            var tween = derivedClip.CreateTween(bindingTarget).SetDelay((float)clip.start);
-                            tween.Play();
+                            // Write to Asset
+                            derivedClip.m_Start = clip.start;
+                            derivedClip.m_End = clip.end;
+                            var tween = derivedClip.CreateTween(bindingTarget)
+                                .SetDelay((float)clip.start).SetEase(derivedClip.m_Curve).Pause();
                             if (tween != null)
                             {
                                 sequence.Join(tween);
@@ -124,8 +163,11 @@ namespace UiAnimation
                 }
             }
 
-            Debug.Log("Play");
-            // sequence.Play();
+            sequence.OnComplete(() =>
+            {
+                callback?.Invoke();
+            });
+            sequence.Play();
         }
     }
 }

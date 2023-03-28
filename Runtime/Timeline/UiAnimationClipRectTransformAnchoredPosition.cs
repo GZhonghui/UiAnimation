@@ -18,11 +18,6 @@ namespace UiAnimation
             return playable;
         }
 
-        protected override void ProcessPlayable(Playable playable)
-        {
-            base.ProcessPlayable(playable);
-        }
-
         public override Tween CreateTween(UnityEngine.Object target)
         {
             var rectTransform = target as RectTransform;
@@ -32,8 +27,8 @@ namespace UiAnimation
                 () => rectTransform.anchoredPosition,
                 x => rectTransform.anchoredPosition = x,
                 new Vector2(m_EndStatus.m_UniformValue.x, m_EndStatus.m_UniformValue.y),
-                (float)duration
-            ).Pause();
+                (float)(m_End - m_Start)
+            );
         }
     }
 

@@ -55,7 +55,7 @@ namespace UiAnimation
         {
             serializedObject.Update();
 
-            var curve =serializedObject.FindProperty("m_Curve");
+            var curve = serializedObject.FindProperty("m_Curve");
             curve.animationCurveValue = UnityEditor.EditorGUILayout.CurveField("Curve", curve.animationCurveValue);
 
             serializedObject.ApplyModifiedProperties();

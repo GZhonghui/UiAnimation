@@ -8,10 +8,9 @@ namespace UiAnimation
 {
     public class UiAnimationDefine
     {
-        public static bool useNativeTimelineAsset
-        {
-            get => true;
-        }
+        public static bool useNativeTimelineAsset { get => true; }
+
+        public static bool enableLua { get => true; }
 
         public static string name
         {
@@ -21,6 +20,11 @@ namespace UiAnimation
         public static string extensionName
         {
             get => "uianimation";
+        }
+
+        public static string luaExportName
+        {
+            get => "ExportAnims";
         }
 
         public static double timelineEps
@@ -33,7 +37,7 @@ namespace UiAnimation
             get => System.IO.Path.Combine("Assets", "Ui", "Animation");
         }
 
-        public enum TrackType
+        public enum AnimationType
         {
             None = 0,
 

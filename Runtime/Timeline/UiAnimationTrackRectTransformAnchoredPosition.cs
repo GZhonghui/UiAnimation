@@ -19,16 +19,16 @@ namespace UiAnimation
             return playable;
         }
 
-        public override void InitProperty(UnityEngine.Object target)
+        public override void InitProperty(UnityEngine.Object target, UiAnimationStatus initStatus)
         {
-            base.InitProperty(target);
+            base.InitProperty(target, initStatus);
 
             var rectTransform = target as RectTransform;
             if (rectTransform != null)
             {
                 rectTransform.anchoredPosition = new Vector2(
-                    m_InitStatus.m_UniformValue.x,
-                    m_InitStatus.m_UniformValue.y
+                    initStatus.m_UniformValue.x,
+                    initStatus.m_UniformValue.y
                 );
             }
         }
@@ -49,25 +49,27 @@ namespace UiAnimation
         public override void EditorLock(UnityEditor.SerializedProperty propertyInitStatus, UnityEngine.Object binding)
         {
             var rectTransform = binding as RectTransform;
-            var x = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("x");
-            var y = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("y");
-
             if (rectTransform != null)
             {
-                x.floatValue = rectTransform.anchoredPosition.x;
-                y.floatValue = rectTransform.anchoredPosition.y;
+                var status= new UiAnimationStatus();
+                status.m_UniformValue = new Vector4(
+                    rectTransform.anchoredPosition.x,
+                    rectTransform.anchoredPosition.y
+                );
+                status.Serialize(propertyInitStatus);
             }
         }
 
         public override void EditorReset(UnityEditor.SerializedProperty propertyInitStatus, UnityEngine.Object binding)
         {
             var rectTransform = binding as RectTransform;
-            var x = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("x");
-            var y = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("y");
-
             if (rectTransform != null)
             {
-                rectTransform.anchoredPosition = new Vector2(x.floatValue, y.floatValue);
+                var status= new UiAnimationStatus();
+                status.Deserialize(propertyInitStatus);
+                rectTransform.anchoredPosition = new Vector2(
+                    status.m_UniformValue.x, status.m_UniformValue.y
+                );
             }
         }
 #endif

@@ -19,9 +19,9 @@ namespace UiAnimation
             return playable;
         }
 
-        public override void InitProperty(UnityEngine.Object target)
+        public override void InitProperty(UnityEngine.Object target, UiAnimationStatus initStatus)
         {
-            base.InitProperty(target);
+            base.InitProperty(target, initStatus);
 
             var rectTransform = target as RectTransform;
             if (rectTransform != null)
@@ -29,7 +29,7 @@ namespace UiAnimation
                 rectTransform.localEulerAngles = new Vector3(
                     rectTransform.localEulerAngles.x,
                     rectTransform.localEulerAngles.y,
-                    m_InitStatus.m_UniformValue.x
+                    initStatus.m_UniformValue.x
                 );
             }
         }
@@ -44,25 +44,25 @@ namespace UiAnimation
         public override void EditorLock(UnityEditor.SerializedProperty propertyInitStatus, UnityEngine.Object binding)
         {
             var rectTransform = binding as RectTransform;
-            var x = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("x");
-
             if (rectTransform != null)
             {
-                x.floatValue = rectTransform.localEulerAngles.z;
+                var status = new UiAnimationStatus();
+                status.m_UniformValue.x = rectTransform.localEulerAngles.z;
+                status.Serialize(propertyInitStatus);
             }
         }
 
         public override void EditorReset(UnityEditor.SerializedProperty propertyInitStatus, UnityEngine.Object binding)
         {
             var rectTransform = binding as RectTransform;
-            var x = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("x");
-
             if (rectTransform != null)
             {
+                var status = new UiAnimationStatus();
+                status.Deserialize(propertyInitStatus);
                 rectTransform.localEulerAngles = new Vector3(
                     rectTransform.localEulerAngles.x,
                     rectTransform.localEulerAngles.y,
-                    x.floatValue
+                    status.m_UniformValue.x
                 );
             }
         }

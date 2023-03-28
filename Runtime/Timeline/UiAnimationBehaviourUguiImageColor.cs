@@ -9,9 +9,6 @@ namespace UiAnimation
 {
     public class UiAnimationBehaviourUguiImageColor : UiAnimationBehaviourBase
     {
-        public override void ProcessFrame(Playable playable, FrameData info, object playerData)
-        {
-            base.ProcessFrame(playable, info, playerData);
-        }
+
     }
 }

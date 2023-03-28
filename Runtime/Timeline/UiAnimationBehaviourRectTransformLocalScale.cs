@@ -8,9 +8,6 @@ namespace UiAnimation
 {
     public class UiAnimationBehaviourRectTransformLocalScale : UiAnimationBehaviourBase
     {
-        public override void ProcessFrame(Playable playable, FrameData info, object playerData)
-        {
-            base.ProcessFrame(playable, info, playerData);
-        }
+
     }
 }

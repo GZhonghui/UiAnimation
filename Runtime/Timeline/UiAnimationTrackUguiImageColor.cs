@@ -20,18 +20,18 @@ namespace UiAnimation
             return playable;
         }
 
-        public override void InitProperty(UnityEngine.Object target)
+        public override void InitProperty(UnityEngine.Object target, UiAnimationStatus initStatus)
         {
-            base.InitProperty(target);
+            base.InitProperty(target, initStatus);
 
             var image = target as Image;
             if (image != null)
             {
                 image.color = new Color(
-                    m_InitStatus.m_UniformValue.x,
-                    m_InitStatus.m_UniformValue.y,
-                    m_InitStatus.m_UniformValue.z,
-                    m_InitStatus.m_UniformValue.w
+                    initStatus.m_UniformValue.x,
+                    initStatus.m_UniformValue.y,
+                    initStatus.m_UniformValue.z,
+                    initStatus.m_UniformValue.w
                 );
             }
         }
@@ -57,31 +57,22 @@ namespace UiAnimation
         public override void EditorLock(UnityEditor.SerializedProperty propertyInitStatus, UnityEngine.Object binding)
         {
             var image = binding as Image;
-            var x = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("x");
-            var y = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("y");
-            var z = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("z");
-            var w = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("w");
-
             if (image != null)
             {
-                x.floatValue = image.color.r;
-                y.floatValue = image.color.g;
-                z.floatValue = image.color.b;
-                w.floatValue = image.color.a;
+                var status = new UiAnimationStatus();
+                status.m_UniformValue = image.color;
+                status.Serialize(propertyInitStatus);
             }
         }
 
         public override void EditorReset(UnityEditor.SerializedProperty propertyInitStatus, UnityEngine.Object binding)
         {
             var image = binding as Image;
-            var x = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("x");
-            var y = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("y");
-            var z = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("z");
-            var w = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("w");
-
             if (image != null)
             {
-                image.color = new Color(x.floatValue, y.floatValue, z.floatValue, w.floatValue);
+                var status = new UiAnimationStatus();
+                status.Deserialize(propertyInitStatus);
+                image.color = status.m_UniformValue;
             }
         }
 #endif

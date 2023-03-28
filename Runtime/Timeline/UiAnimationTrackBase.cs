@@ -36,11 +36,20 @@ namespace UiAnimation
                 {
                     baseClip.m_Start = clip.start;
                     baseClip.m_End = clip.end;
+
+#if UNITY_EDITOR
+                    var clipObject = new UnityEditor.SerializedObject(baseClip);
+
+                    clipObject.Update();
+                    clipObject.FindProperty("m_Start").doubleValue = clip.start;
+                    clipObject.FindProperty("m_End").doubleValue = clip.end;
+                    clipObject.ApplyModifiedProperties();
+#endif
                 }
             }
         }
 
-        public virtual void InitProperty(UnityEngine.Object target)
+        public virtual void InitProperty(UnityEngine.Object target, UiAnimationStatus initStatus)
         {
 
         }

@@ -19,11 +19,6 @@ namespace UiAnimation
             return playable;
         }
 
-        protected override void ProcessPlayable(Playable playable)
-        {
-            base.ProcessPlayable(playable);
-        }
-
         public override Tween CreateTween(UnityEngine.Object target)
         {
             var image = target as Image;
@@ -38,7 +33,7 @@ namespace UiAnimation
                     m_EndStatus.m_UniformValue.z,
                     m_EndStatus.m_UniformValue.w
                 ),
-                (float)duration
+                (float)(m_End - m_Start)
             );
         }
     }

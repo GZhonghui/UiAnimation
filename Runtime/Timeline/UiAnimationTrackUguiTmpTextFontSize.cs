@@ -21,14 +21,14 @@ namespace UiAnimation
             return playable;
         }
 
-        public override void InitProperty(UnityEngine.Object target)
+        public override void InitProperty(UnityEngine.Object target, UiAnimationStatus initStatus)
         {
-            base.InitProperty(target);
+            base.InitProperty(target, initStatus);
 
             var text = target as TextMeshProUGUI;
             if (text != null)
             {
-                text.fontSize = m_InitStatus.m_UniformValue.x;
+                text.fontSize = initStatus.m_UniformValue.x;
             }
         }
 
@@ -45,22 +45,22 @@ namespace UiAnimation
         public override void EditorLock(UnityEditor.SerializedProperty propertyInitStatus, UnityEngine.Object binding)
         {
             var text = binding as TextMeshProUGUI;
-            var x = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("x");
-
             if (text != null)
             {
-                x.floatValue = text.fontSize;
+                var status = new UiAnimationStatus();
+                status.m_UniformValue.x = text.fontSize;
+                status.Serialize(propertyInitStatus);
             }
         }
 
         public override void EditorReset(UnityEditor.SerializedProperty propertyInitStatus, UnityEngine.Object binding)
         {
             var text = binding as TextMeshProUGUI;
-            var x = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("x");
-
             if (text != null)
             {
-                text.fontSize = x.floatValue;
+                var status = new UiAnimationStatus();
+                status.Deserialize(propertyInitStatus);
+                text.fontSize = status.m_UniformValue.x;
             }
         }
 #endif
