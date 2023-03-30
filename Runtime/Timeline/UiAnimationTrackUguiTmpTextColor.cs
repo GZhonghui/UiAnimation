@@ -9,12 +9,12 @@ using TMPro;
 namespace UiAnimation
 {
     [TrackBindingType(typeof(TextMeshProUGUI))]
-    [TrackClipType(typeof(UiAnimationClipUguiTmpTextFontSize))]
-    public class UiAnimationTrackUguiTmpTextFontSize : UiAnimationTrackBase
+    [TrackClipType(typeof(UiAnimationClipUguiTmpTextColor))]
+    public class UiAnimationTrackUguiTmpTextColor : UiAnimationTrackBase
     {
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
-            var playable = ScriptPlayable<UiAnimationMixerUguiTmpTextFontSize>.Create(graph, inputCount);
+            var playable = ScriptPlayable<UiAnimationMixerUguiTmpTextColor>.Create(graph, inputCount);
 
             ProcessPlayable(playable);
 
@@ -28,7 +28,12 @@ namespace UiAnimation
             var text = target as TextMeshProUGUI;
             if (text != null)
             {
-                text.fontSize = initStatus.m_UniformValue.x;
+                text.color = new Color(
+                    initStatus.m_UniformValue.x,
+                    initStatus.m_UniformValue.y,
+                    initStatus.m_UniformValue.z,
+                    initStatus.m_UniformValue.w
+                );
             }
         }
 
@@ -37,7 +42,7 @@ namespace UiAnimation
             var text = director.GetGenericBinding(this) as TextMeshProUGUI;
             if (text != null)
             {
-                driver.AddFromName(text, "m_fontSize");
+                driver.AddFromName(text, "m_Color");
             }
         }
 
@@ -45,10 +50,18 @@ namespace UiAnimation
         public override void EditorDrawInitValue(UnityEditor.SerializedProperty propertyInitStatus)
         {
             var x = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("x");
+            var y = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("y");
+            var z = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("z");
+            var w = propertyInitStatus.FindPropertyRelative("m_UniformValue").FindPropertyRelative("w");
 
-            x.floatValue = UnityEditor.EditorGUILayout.FloatField(
-                "Init Font Size", x.floatValue
+            var editorResult = UnityEditor.EditorGUILayout.ColorField(
+                "Init Text Color", new Color(x.floatValue, y.floatValue, z.floatValue, w.floatValue)
             );
+
+            x.floatValue = editorResult.r;
+            y.floatValue = editorResult.g;
+            z.floatValue = editorResult.b;
+            w.floatValue = editorResult.a;
         }
 
         public override void EditorLock(UnityEditor.SerializedProperty propertyInitStatus, UnityEngine.Object binding)
@@ -57,7 +70,7 @@ namespace UiAnimation
             if (text != null)
             {
                 var status = new UiAnimationStatus();
-                status.m_UniformValue.x = text.fontSize;
+                status.m_UniformValue = text.color;
                 status.Serialize(propertyInitStatus);
             }
         }
@@ -69,7 +82,7 @@ namespace UiAnimation
             {
                 var status = new UiAnimationStatus();
                 status.Deserialize(propertyInitStatus);
-                text.fontSize = status.m_UniformValue.x;
+                text.color = status.m_UniformValue;
             }
         }
 #endif
@@ -77,8 +90,8 @@ namespace UiAnimation
 
 #if UNITY_EDITOR
 
-    [UnityEditor.CustomEditor(typeof(UiAnimationTrackUguiTmpTextFontSize))]
-    public class UiAnimationTrackUguiTmpTextFontSizeEditor : UiAnimationTrackBaseEditor
+    [UnityEditor.CustomEditor(typeof(UiAnimationTrackUguiTmpTextColor))]
+    public class UiAnimationTrackUguiTmpTextColorEditor : UiAnimationTrackBaseEditor
     {
         public override void OnInspectorGUI()
         {
@@ -88,8 +101,13 @@ namespace UiAnimation
             var uniformValue = initValue.FindPropertyRelative("m_UniformValue");
 
             GUI.color = Color.gray;
-            UnityEditor.EditorGUILayout.FloatField("Init Font Size",
-                uniformValue.FindPropertyRelative("x").floatValue
+            UnityEditor.EditorGUILayout.ColorField("Init Text Color",
+                new Color(
+                    uniformValue.FindPropertyRelative("x").floatValue,
+                    uniformValue.FindPropertyRelative("y").floatValue,
+                    uniformValue.FindPropertyRelative("z").floatValue,
+                    uniformValue.FindPropertyRelative("w").floatValue
+                )
             );
             GUI.color = Color.white;
         }

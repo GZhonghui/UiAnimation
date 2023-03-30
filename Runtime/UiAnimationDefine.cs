@@ -49,6 +49,7 @@ namespace UiAnimation
             UguiImageColor = 101,
 
             UguiTmpTextFontSize = 201,
+            UguiTmpTextColor = 202,
         }
     }
 }

@@ -34,6 +34,15 @@ namespace UiAnimation
             }
         }
 
+        public override void GatherProperties(PlayableDirector director, IPropertyCollector driver)
+        {
+            var rectTransform = director.GetGenericBinding(this) as RectTransform;
+            if (rectTransform != null)
+            {
+                driver.AddFromName(rectTransform, "m_LocalScale");
+            }
+        }
+
 #if UNITY_EDITOR
         public override void EditorDrawInitValue(UnityEditor.SerializedProperty propertyInitStatus)
         {

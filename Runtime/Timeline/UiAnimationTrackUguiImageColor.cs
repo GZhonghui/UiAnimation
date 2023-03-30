@@ -36,6 +36,15 @@ namespace UiAnimation
             }
         }
 
+        public override void GatherProperties(PlayableDirector director, IPropertyCollector driver)
+        {
+            var image = director.GetGenericBinding(this) as Image;
+            if (image != null)
+            {
+                driver.AddFromName(image, "m_Color");
+            }
+        }
+
 #if UNITY_EDITOR
         public override void EditorDrawInitValue(UnityEditor.SerializedProperty propertyInitStatus)
         {
